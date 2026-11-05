@@ -2,7 +2,7 @@ package icy.lib.client.book;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.GsonHelper;
 
 import java.util.Map;
@@ -36,7 +36,7 @@ class TextLayer extends Layer {
     }
 
     @Override
-    void render(BookScreen s, GuiGraphics g) {
+    void render(BookScreen s, GuiGraphicsExtractor g) {
         int x = area[0];
         int y = area[1];
         if (on != null) {

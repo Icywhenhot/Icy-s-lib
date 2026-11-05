@@ -1,7 +1,7 @@
 package icy.lib.client.book;
 
 import com.google.gson.JsonObject;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 import java.util.Map;
 import java.util.Set;
@@ -15,7 +15,7 @@ class ImageLayer extends Layer {
     }
 
     @Override
-    void render(BookScreen s, GuiGraphics g) {
+    void render(BookScreen s, GuiGraphicsExtractor g) {
         sprite.draw(s, g, 0, 0);
     }
 

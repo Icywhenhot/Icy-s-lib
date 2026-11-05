@@ -1,14 +1,14 @@
 package icy.lib.client.book;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 
 import java.io.IOException;
 import java.io.InputStream;
 
 final class Piece {
-    final ResourceLocation texture;
+    final Identifier texture;
     final int texW;
     final int texH;
     final int x;
@@ -17,7 +17,7 @@ final class Piece {
     final int h;
     private final long[] solid;
 
-    private Piece(ResourceLocation texture, int texW, int texH, int x, int y, int w, int h, long[] solid) {
+    private Piece(Identifier texture, int texW, int texH, int x, int y, int w, int h, long[] solid) {
         this.texture = texture;
         this.texW = texW;
         this.texH = texH;
@@ -36,7 +36,7 @@ final class Piece {
         return (solid[i >>> 6] & (1L << i)) != 0;
     }
 
-    static Piece read(ResourceLocation texture, Resource res) throws IOException {
+    static Piece read(Identifier texture, Resource res) throws IOException {
         try (InputStream in = res.open(); NativeImage img = NativeImage.read(in)) {
             int tw = img.getWidth();
             int th = img.getHeight();
@@ -44,7 +44,7 @@ final class Piece {
             int minX = tw, minY = th, maxX = -1, maxY = -1;
             for (int py = 0; py < th; py++) {
                 for (int px = 0; px < tw; px++) {
-                    int alpha = img.getPixelRGBA(px, py) >>> 24;
+                    int alpha = img.getPixel(px, py) >>> 24;
                     if (alpha == 0) {
                         continue;
                     }

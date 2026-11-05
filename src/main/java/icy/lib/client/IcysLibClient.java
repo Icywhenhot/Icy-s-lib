@@ -5,41 +5,42 @@ import icy.lib.IcyBooks;
 import icy.lib.IcysLib;
 import icy.lib.client.book.BookLoader;
 import icy.lib.client.book.BookScreen;
+import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.minecraft.client.Minecraft;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.network.chat.Component;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
-import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
-import net.neoforged.neoforge.common.NeoForge;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.PackType;
 
-@Mod(value = IcysLib.MOD_ID, dist = Dist.CLIENT)
-public final class IcysLibClient {
+public final class IcysLibClient implements ClientModInitializer {
 
-    public IcysLibClient(IEventBus bus) {
-        bus.addListener(RegisterClientReloadListenersEvent.class, e -> e.registerReloadListener(BookLoader.INSTANCE));
-        NeoForge.EVENT_BUS.addListener(RegisterClientCommandsEvent.class, e -> commands(e.getDispatcher()));
+    @Override
+    public void onInitializeClient() {
+        ResourceLoader.get(PackType.CLIENT_RESOURCES)
+                .registerReloadListener(Identifier.fromNamespaceAndPath(IcysLib.MOD_ID, "books"), BookLoader.INSTANCE);
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, ctx) -> commands(dispatcher));
         IcyBooks.bindOpener(BookScreen::open);
     }
 
-    private static void commands(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(Commands.literal(IcysLib.MOD_ID)
-                .then(Commands.literal("book")
-                        .then(Commands.argument("id", ResourceLocationArgument.id())
+    private static void commands(CommandDispatcher<FabricClientCommandSource> dispatcher) {
+        dispatcher.register(ClientCommands.literal(IcysLib.MOD_ID)
+                .then(ClientCommands.literal("book")
+                        .then(ClientCommands.argument("id", IdentifierArgument.id())
                                 .suggests((ctx, b) -> SharedSuggestionProvider.suggestResource(BookLoader.ids(), b))
                                 .executes(ctx -> {
-                                    BookScreen.open(ResourceLocationArgument.getId(ctx, "id"));
+                                    Identifier id = ctx.getArgument("id", Identifier.class);
+                                    Minecraft.getInstance().schedule(() -> BookScreen.open(id));
                                     return 1;
                                 })))
-                .then(Commands.literal("debug")
+                .then(ClientCommands.literal("debug")
                         .executes(ctx -> {
                             BookScreen.debug = !BookScreen.debug;
-                            Minecraft.getInstance().gui.getChat().addMessage(
+                            ctx.getSource().sendFeedback(
                                     Component.translatable(BookScreen.debug ? "icys_lib.debug.on" : "icys_lib.debug.off"));
                             return 1;
                         })));

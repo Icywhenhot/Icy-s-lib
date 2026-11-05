@@ -4,7 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import icy.lib.IcysLib;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
@@ -23,7 +23,7 @@ import java.util.Set;
 import java.util.function.UnaryOperator;
 
 final class Book {
-    final ResourceLocation id;
+    final Identifier id;
     final int width;
     final int height;
     final int[] bleed;
@@ -35,10 +35,10 @@ final class Book {
     final List<Layer> layers = new ArrayList<>();
     final List<Entry> entries = new ArrayList<>();
     final int step;
-    private final ResourceLocation root;
+    private final Identifier root;
     private final Map<String, Piece> pieces = new HashMap<>();
 
-    Book(ResourceLocation id, JsonObject json, Map<String, JsonObject> entryFiles, ResourceManager rm) throws IOException {
+    Book(Identifier id, JsonObject json, Map<String, JsonObject> entryFiles, ResourceManager rm) throws IOException {
         this.id = id;
         int[] canvas = Json.ints(json, "canvas", 2, null);
         if (canvas == null) {
@@ -48,7 +48,7 @@ final class Book {
         this.height = canvas[1];
         this.bleed = Json.ints(json, "bleed", 4, new int[]{0, 0, 0, 0});
         this.size = GsonHelper.getAsFloat(json, "size", 1f);
-        this.root = ResourceLocation.parse(GsonHelper.getAsString(json, "textures"));
+        this.root = Identifier.parse(GsonHelper.getAsString(json, "textures"));
         JsonObject text = GsonHelper.getAsJsonObject(json, "text", new JsonObject());
         this.textScale = GsonHelper.getAsFloat(text, "scale", 1f);
         Integer col = Json.color(text, "color");
@@ -80,7 +80,7 @@ final class Book {
         }
         maybe.addAll(need);
         for (String name : maybe) {
-            ResourceLocation rl = texture(name);
+            Identifier rl = texture(name);
             Optional<Resource> res = rm.getResource(rl);
             if (res.isPresent()) {
                 pieces.put(name, Piece.read(rl, res.get()));
@@ -114,11 +114,11 @@ final class Book {
         return 1;
     }
 
-    ResourceLocation texture(String name) {
+    Identifier texture(String name) {
         if (name.indexOf(':') >= 0) {
-            return ResourceLocation.parse(name.endsWith(".png") ? name : name + ".png");
+            return Identifier.parse(name.endsWith(".png") ? name : name + ".png");
         }
-        return ResourceLocation.fromNamespaceAndPath(root.getNamespace(), root.getPath() + name + ".png");
+        return Identifier.fromNamespaceAndPath(root.getNamespace(), root.getPath() + name + ".png");
     }
 
     Piece piece(String name) {

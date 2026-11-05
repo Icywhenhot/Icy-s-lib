@@ -2,7 +2,7 @@ package icy.lib.client.book;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.GsonHelper;
 
 import java.util.LinkedHashSet;
@@ -96,7 +96,7 @@ class ListLayer extends Layer {
     }
 
     @Override
-    void render(BookScreen s, GuiGraphics g) {
+    void render(BookScreen s, GuiGraphicsExtractor g) {
         List<Entry> rows = rows(s);
         String cur = s.get(key);
         float sc = s.crisp(scale);
@@ -146,7 +146,7 @@ class ListLayer extends Layer {
     }
 
     @Override
-    void outline(BookScreen s, GuiGraphics g) {
+    void outline(BookScreen s, GuiGraphicsExtractor g) {
         List<Entry> rows = rows(s);
         for (int i = 0; i < rows.size(); i++) {
             s.box(g, frame.boxAt(s, x(i), y(i), s.crisp(scale)));

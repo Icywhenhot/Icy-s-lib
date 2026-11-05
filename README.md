@@ -13,19 +13,16 @@ repositories {
 }
 
 dependencies {
-    implementation "icy.lib:icys_lib-neoforge-${minecraft_version}:${icys_lib_version}"
+    implementation "icy.lib:icys_lib-fabric-${minecraft_version}:${icys_lib_version}"
 }
 ```
 
-and in `neoforge.mods.toml`:
+and in `fabric.mod.json`:
 
-```toml
-[[dependencies.${mod_id}]]
-modId="icys_lib"
-type="required"
-versionRange="[${icys_lib_version},)"
-ordering="AFTER"
-side="BOTH"
+```json
+"depends": {
+  "icys_lib": ">=1.0.0"
+}
 ```
 
 Run `gradlew publishToMavenLocal` here first.

@@ -2,7 +2,7 @@ package icy.lib.client.book;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
 
@@ -47,7 +47,7 @@ class RecipeLayer extends Layer {
     }
 
     @Override
-    void render(BookScreen s, GuiGraphics g) {
+    void render(BookScreen s, GuiGraphicsExtractor g) {
         Entry e = s.book.entry(category, s.fill(entry));
         if (e == null) {
             return;

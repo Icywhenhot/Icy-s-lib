@@ -2,7 +2,7 @@ package icy.lib.client.book;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
 
@@ -75,7 +75,7 @@ final class Sprite {
         return at != null ? at[1] : r[1];
     }
 
-    void draw(BookScreen s, GuiGraphics g, float dx, float dy) {
+    void draw(BookScreen s, GuiGraphicsExtractor g, float dx, float dy) {
         Piece p = piece(s);
         if (p == null) {
             return;
@@ -84,7 +84,7 @@ final class Sprite {
         s.blit(g, p, r, homeX(r) + dx, homeY(r) + dy);
     }
 
-    void drawAt(BookScreen s, GuiGraphics g, float x, float y, float scale) {
+    void drawAt(BookScreen s, GuiGraphicsExtractor g, float x, float y, float scale) {
         Piece p = piece(s);
         if (p != null) {
             s.blit(g, p, rect(p), x, y, scale);

@@ -3,7 +3,7 @@ package icy.lib.client.book;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.GsonHelper;
 
 import java.util.ArrayList;
@@ -86,7 +86,7 @@ class ChoiceLayer extends Layer {
     }
 
     @Override
-    void render(BookScreen s, GuiGraphics g) {
+    void render(BookScreen s, GuiGraphicsExtractor g) {
         String cur = s.get(key);
         for (Map.Entry<String, Sprite> e : options(s).entrySet()) {
             boolean on = e.getKey().equals(cur);
@@ -121,7 +121,7 @@ class ChoiceLayer extends Layer {
     }
 
     @Override
-    void outline(BookScreen s, GuiGraphics g) {
+    void outline(BookScreen s, GuiGraphicsExtractor g) {
         for (Sprite sp : options(s).values()) {
             s.box(g, sp.box(s, 0, 0));
         }

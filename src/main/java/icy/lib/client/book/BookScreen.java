@@ -4,20 +4,22 @@ import com.mojang.blaze3d.platform.Window;
 import icy.lib.IcysLib;
 import icy.lib.client.anim.Anim;
 import icy.lib.client.draw.Gfx;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.resources.language.I18n;
+import net.minecraft.locale.Language;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.fml.loading.FMLEnvironment;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.HashMap;
@@ -27,13 +29,13 @@ import java.util.Map;
 import java.util.Set;
 
 public class BookScreen extends Screen {
-    private static final Map<ResourceLocation, Map<String, String>> remembered = new HashMap<>();
+    private static final Map<Identifier, Map<String, String>> remembered = new HashMap<>();
     private static final Set<String> overflowWarned = new HashSet<>();
     private static final int OPEN_MS = 220;
     private static final float RISE = 6f;
     public static boolean debug;
 
-    final ResourceLocation id;
+    final Identifier id;
     Book book;
     final Anim.Lift lift = new Anim.Lift();
     private final Map<String, String> state;
@@ -53,16 +55,16 @@ public class BookScreen extends Screen {
         this.state = new HashMap<>(remembered.getOrDefault(book.id, Map.of()));
     }
 
-    public static void open(ResourceLocation id) {
+    public static void open(Identifier id) {
         Minecraft mc = Minecraft.getInstance();
         Book b = BookLoader.get(id);
         if (b == null) {
             if (mc.player != null) {
-                mc.player.displayClientMessage(Component.translatable("icys_lib.book.missing", id.toString()), false);
+                mc.player.sendSystemMessage(Component.translatable("icys_lib.book.missing", id.toString()));
             }
             return;
         }
-        mc.setScreen(new BookScreen(b));
+        mc.gui.setScreen(new BookScreen(b));
     }
 
     @Override
@@ -118,7 +120,7 @@ public class BookScreen extends Screen {
 
     String lang(String text, String fallback) {
         String key = fill(text);
-        if (fallback != null && !I18n.exists(key)) {
+        if (fallback != null && !Language.getInstance().has(key)) {
             return fill(fallback);
         }
         return key;
@@ -137,13 +139,13 @@ public class BookScreen extends Screen {
     }
 
     @Override
-    public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        renderTransparentBackground(g);
+    public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
+        extractTransparentBackground(g);
     }
 
     @Override
-    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        super.render(g, mouseX, mouseY, partialTick);
+    public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
+        super.extractRenderState(g, mouseX, mouseY, partialTick);
         pointer();
         lift.beginFrame(0.06f);
         tooltip = ItemStack.EMPTY;
@@ -181,11 +183,11 @@ public class BookScreen extends Screen {
         }
     }
 
-    void blit(GuiGraphics g, Piece p, int[] r, float x, float y) {
+    void blit(GuiGraphicsExtractor g, Piece p, int[] r, float x, float y) {
         blit(g, p, r, x, y, 1f);
     }
 
-    void blit(GuiGraphics g, Piece p, int[] r, float x, float y, float scale) {
+    void blit(GuiGraphicsExtractor g, Piece p, int[] r, float x, float y, float scale) {
         if (r[2] <= 0 || r[3] <= 0) {
             return;
         }
@@ -204,7 +206,7 @@ public class BookScreen extends Screen {
         return Math.round(book.bend.at(x, y) / unit) * unit;
     }
 
-    void item(GuiGraphics g, ItemStack stack, float x, float y, float size, boolean tip) {
+    void item(GuiGraphicsExtractor g, ItemStack stack, float x, float y, float size, boolean tip) {
         float drawn = 16f * crisp(size / 16f);
         float off = (size - drawn) / 2f;
         Gfx.push(g);
@@ -217,13 +219,13 @@ public class BookScreen extends Screen {
         }
     }
 
-    void icon(GuiGraphics g, Piece p, float x, float y, float size) {
+    void icon(GuiGraphicsExtractor g, Piece p, float x, float y, float size) {
         float sc = crisp(size / p.texW);
         float off = (size - p.texW * sc) / 2f;
         blit(g, p, new int[]{0, 0, p.texW, p.texH}, x + off, y + off, sc);
     }
 
-    void text(GuiGraphics g, String key, int x, int y, int w, int h, String align, String valign, Integer color, float scale, boolean bent) {
+    void text(GuiGraphicsExtractor g, String key, int x, int y, int w, int h, String align, String valign, Integer color, float scale, boolean bent) {
         float s = scale > 0 ? scale : book.textScale;
         int fw = Math.round(w / s);
         int fh = Math.round(h / s);
@@ -266,7 +268,7 @@ public class BookScreen extends Screen {
         Gfx.pop(g);
     }
 
-    void box(GuiGraphics g, float[] r) {
+    void box(GuiGraphicsExtractor g, float[] r) {
         if (r == null) {
             return;
         }
@@ -289,14 +291,14 @@ public class BookScreen extends Screen {
             minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1f));
             return;
         }
-        SoundEvent evt = SoundEvent.createVariableRangeEvent(ResourceLocation.parse(sound));
+        SoundEvent evt = SoundEvent.createVariableRangeEvent(Identifier.parse(sound));
         minecraft.getSoundManager().play(SimpleSoundInstance.forUI(evt, 1f));
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button != 0) {
-            return super.mouseClicked(mouseX, mouseY, button);
+    public boolean mouseClicked(MouseButtonEvent evt, boolean doubled) {
+        if (evt.button() != 0) {
+            return super.mouseClicked(evt, doubled);
         }
         pointer();
         for (int i = book.layers.size() - 1; i >= 0; i--) {
@@ -309,12 +311,12 @@ public class BookScreen extends Screen {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (!FMLEnvironment.production && keyCode == GLFW.GLFW_KEY_R) {
+    public boolean keyPressed(KeyEvent evt) {
+        if (FabricLoader.getInstance().isDevelopmentEnvironment() && evt.key() == GLFW.GLFW_KEY_R) {
             BookLoader.reloadNow();
             return true;
         }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(evt);
     }
 
     @Override

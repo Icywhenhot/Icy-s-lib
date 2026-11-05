@@ -2,7 +2,7 @@ package icy.lib.client.book;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.GsonHelper;
 
 class ButtonLayer extends ImageLayer {
@@ -29,7 +29,7 @@ class ButtonLayer extends ImageLayer {
     }
 
     @Override
-    void outline(BookScreen s, GuiGraphics g) {
+    void outline(BookScreen s, GuiGraphicsExtractor g) {
         s.box(g, sprite.box(s, 0, 0));
     }
 }

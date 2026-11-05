@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "${version}",
+  "name": "${mod_name}",
+  "description": "Shared code for Icy's mods, starting with the guidebooks.",
+  "license": "${mod_license}",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["icy.lib.IcysLib"],
+    "client": ["icy.lib.client.IcysLibClient"]
+  },
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "minecraft": "${minecraft_version}",
+    "java": ">=25",
+    "fabric-api": "*"
+  }
+}

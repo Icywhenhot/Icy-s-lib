@@ -2,7 +2,7 @@ package icy.lib.client.book;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.GsonHelper;
 
 import java.util.List;
@@ -52,13 +52,13 @@ abstract class Layer {
 
     void settle(BookScreen s) {}
 
-    abstract void render(BookScreen s, GuiGraphics g);
+    abstract void render(BookScreen s, GuiGraphicsExtractor g);
 
     int click(BookScreen s, double ax, double ay) {
         return PASS;
     }
 
-    void outline(BookScreen s, GuiGraphics g) {}
+    void outline(BookScreen s, GuiGraphicsExtractor g) {}
 
     void domain(List<Entry> entries, Map<String, Set<String>> out) {}
 
