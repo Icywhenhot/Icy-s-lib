@@ -1,0 +1,5 @@
+{
+  "icys_lib.book.missing": "There is no book called %s",
+  "icys_lib.debug.on": "Book debug on",
+  "icys_lib.debug.off": "Book debug off"
+}
