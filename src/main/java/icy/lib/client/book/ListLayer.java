@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.GsonHelper;
+import net.minecraft.util.Mth;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -30,6 +31,8 @@ class ListLayer extends Layer {
     private final Integer labelColor;
     private final String labelAlign;
     private final String sound;
+    private final int shownRows;
+    private final Scrollbar scrollbar;
 
     ListLayer(JsonObject o) {
         super(o);
@@ -69,10 +72,31 @@ class ListLayer extends Layer {
             this.labelAlign = null;
         }
         this.sound = GsonHelper.getAsString(o, "sound", null);
+        this.shownRows = GsonHelper.getAsInt(o, "rows", 0);
+        if (shownRows > 0 && columns <= 0) {
+            throw new JsonParseException("list " + key + " needs columns to scroll");
+        }
+        this.scrollbar = Scrollbar.read(o);
     }
 
     private List<Entry> rows(BookScreen s) {
         return s.book.find(category, where, s::fill, max);
+    }
+
+    private int rowCount(int n) {
+        return (n + columns - 1) / columns;
+    }
+
+    private int topRow(BookScreen s, int n) {
+        return Mth.clamp(s.scrolled(key), 0, Math.max(0, rowCount(n) - shownRows));
+    }
+
+    private int first(BookScreen s, int n) {
+        return shownRows > 0 ? topRow(s, n) * columns : 0;
+    }
+
+    private int last(int first, int n) {
+        return shownRows > 0 ? Math.min(n, first + shownRows * columns) : n;
     }
 
     private int x(int i) {
@@ -100,10 +124,12 @@ class ListLayer extends Layer {
         List<Entry> rows = rows(s);
         String cur = s.get(key);
         float sc = s.crisp(scale);
-        for (int i = 0; i < rows.size(); i++) {
+        int first = first(s, rows.size());
+        int last = last(first, rows.size());
+        for (int i = first; i < last; i++) {
             Entry e = rows.get(i);
-            int x = x(i);
-            int y = y(i);
+            int x = x(i - first);
+            int y = y(i - first);
             boolean on = e.name.equals(cur);
             (on && selected != null ? selected : frame).drawAt(s, g, x, y, sc);
             if (!e.icon().isEmpty()) {
@@ -124,14 +150,33 @@ class ListLayer extends Layer {
                 }
             }
         }
+        if (shownRows > 0 && scrollbar != null) {
+            scrollbar.render(g, topRow(s, rows.size()), shownRows, rowCount(rows.size()));
+        }
+    }
+
+    @Override
+    boolean scroll(BookScreen s, double ax, double ay, int notches) {
+        if (shownRows <= 0) {
+            return false;
+        }
+        boolean overgrid = ax >= at[0] && ay >= at[1] && ax < at[0] + step[0] * columns && ay < at[1] + step[1] * shownRows;
+        if (!overgrid && (scrollbar == null || !scrollbar.over(ax, ay))) {
+            return false;
+        }
+        int total = rowCount(rows(s).size());
+        s.scrollTo(key, Mth.clamp(s.scrolled(key) - notches, 0, Math.max(0, total - shownRows)));
+        return true;
     }
 
     @Override
     int click(BookScreen s, double ax, double ay) {
         List<Entry> rows = rows(s);
-        for (int i = 0; i < rows.size(); i++) {
-            int x = x(i);
-            int y = y(i);
+        int first = first(s, rows.size());
+        int last = last(first, rows.size());
+        for (int i = first; i < last; i++) {
+            int x = x(i - first);
+            int y = y(i - first);
             if (!frame.hitAt(s, ax, ay, x, y, s.crisp(scale))) {
                 continue;
             }
@@ -148,8 +193,10 @@ class ListLayer extends Layer {
     @Override
     void outline(BookScreen s, GuiGraphicsExtractor g) {
         List<Entry> rows = rows(s);
-        for (int i = 0; i < rows.size(); i++) {
-            s.box(g, frame.boxAt(s, x(i), y(i), s.crisp(scale)));
+        int first = first(s, rows.size());
+        int last = last(first, rows.size());
+        for (int i = first; i < last; i++) {
+            s.box(g, frame.boxAt(s, x(i - first), y(i - first), s.crisp(scale)));
         }
     }
 
