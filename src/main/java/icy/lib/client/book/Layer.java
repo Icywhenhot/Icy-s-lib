@@ -58,6 +58,10 @@ abstract class Layer {
         return PASS;
     }
 
+    boolean scroll(BookScreen s, double ax, double ay, int notches) {
+        return false;
+    }
+
     void outline(BookScreen s, GuiGraphics g) {}
 
     void domain(List<Entry> entries, Map<String, Set<String>> out) {}

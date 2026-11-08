@@ -44,6 +44,7 @@ public class BookScreen extends Screen {
     private int originY;
     private double ax;
     private double ay;
+    private double wheel;
     private ItemStack tooltip = ItemStack.EMPTY;
 
     private BookScreen(Book book) {
@@ -110,6 +111,15 @@ public class BookScreen extends Screen {
 
     void set(String key, String value) {
         state.put(key, value);
+    }
+
+    int scrolled(String key) {
+        String raw = state.get("scroll:" + key);
+        return raw == null ? 0 : Integer.parseInt(raw);
+    }
+
+    void scrollTo(String key, int n) {
+        state.put("scroll:" + key, Integer.toString(n));
     }
 
     String fill(String raw) {
@@ -223,24 +233,42 @@ public class BookScreen extends Screen {
         blit(g, p, new int[]{0, 0, p.texW, p.texH}, x + off, y + off, sc);
     }
 
+    private List<FormattedCharSequence> wrap(String key, int fw) {
+        return wrapped.computeIfAbsent(key + "|" + fw, kk -> font.split(Component.translatable(key), fw));
+    }
+
+    int lineCount(String key, int w, float scale) {
+        float s = scale > 0 ? scale : book.textScale;
+        return wrap(key, Math.round(w / s)).size();
+    }
+
+    int lineRoom(int h, float scale) {
+        float s = scale > 0 ? scale : book.textScale;
+        return Math.max(1, Math.round(h / s) / font.lineHeight);
+    }
+
     void text(GuiGraphics g, String key, int x, int y, int w, int h, String align, String valign, Integer color, float scale, boolean bent) {
+        int count = lineCount(key, w, scale);
+        int max = lineRoom(h, scale);
+        if (count > max && overflowWarned.add(book.id + " " + key)) {
+            IcysLib.LOGGER.warn("text {} in book {} has {} lines, room for {}", key, book.id, count, max);
+        }
+        text(g, key, x, y, w, h, align, valign, color, scale, bent, 0);
+    }
+
+    void text(GuiGraphics g, String key, int x, int y, int w, int h, String align, String valign, Integer color, float scale, boolean bent, int skip) {
         float s = scale > 0 ? scale : book.textScale;
         int fw = Math.round(w / s);
         int fh = Math.round(h / s);
-        List<FormattedCharSequence> lines = wrapped.computeIfAbsent(key + "|" + fw,
-                kk -> font.split(Component.translatable(key), fw));
-        int max = Math.max(1, fh / font.lineHeight);
-        if (lines.size() > max && overflowWarned.add(book.id + " " + key)) {
-            IcysLib.LOGGER.warn("text {} in book {} has {} lines, room for {}", key, book.id, lines.size(), max);
-        }
-        int count = Math.min(lines.size(), max);
+        List<FormattedCharSequence> lines = wrap(key, fw);
+        int count = Math.min(lines.size() - skip, lineRoom(h, scale));
         int top = valign.equals("middle") ? (fh - count * font.lineHeight + 1) / 2 : 0;
         int col = color != null ? color : book.textColor;
         Gfx.push(g);
         Gfx.move(g, x, y);
         Gfx.scale(g, s);
         for (int i = 0; i < count; i++) {
-            FormattedCharSequence line = lines.get(i);
+            FormattedCharSequence line = lines.get(skip + i);
             int lw = font.width(line);
             int lx = switch (align) {
                 case "center" -> (fw - lw) / 2;
@@ -302,6 +330,24 @@ public class BookScreen extends Screen {
         for (int i = book.layers.size() - 1; i >= 0; i--) {
             Layer l = book.layers.get(i);
             if (l.shown(this) && l.click(this, ax, ay) != Layer.PASS) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        wheel += scrollY;
+        int notches = (int) wheel;
+        wheel -= notches;
+        if (notches == 0) {
+            return false;
+        }
+        pointer();
+        for (int i = book.layers.size() - 1; i >= 0; i--) {
+            Layer l = book.layers.get(i);
+            if (l.shown(this) && l.scroll(this, ax, ay, notches)) {
                 return true;
             }
         }

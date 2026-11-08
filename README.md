@@ -57,7 +57,11 @@ letter) and items then follow the page curve. Give a `text` or `items` layer `"b
 straight, e.g. text that sits on a piece of art.
 
 A `list` lays its entries out along `step`; give it `columns` to wrap them into a grid and `scale` to
-draw its frames and icons smaller or larger. A `recipe` layer
+draw its frames and icons smaller or larger. Give a grid `rows` and only that many rows show, with the
+mouse wheel moving through the rest a row at a time. A `text` with a `scrollbar` scrolls too, a couple of
+lines per notch, instead of cutting off what doesn't fit. Either takes
+`"scrollbar": {"area": [x, y, w, h], "track": "#RRGGBB", "thumb": "#RRGGBB"}`, drawn only when there's
+more to see. A `recipe` layer
 draws an entry's `recipe` field (nine slots, each an item id, a list of ids to cycle through, or `""`) into
 a 3x3 grid at `at` with `cell` spacing, puts the entry's icon item at `result`, and draws its `art` only
 when the entry has a recipe. Give it a `key` and it sets that state to `yes` or `""`, so other layers can
