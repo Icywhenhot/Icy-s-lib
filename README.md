@@ -13,17 +13,17 @@ repositories {
 }
 
 dependencies {
-    implementation "icy.lib:icys_lib-neoforge-${minecraft_version}:${icys_lib_version}"
+    implementation fg.deobf("icy.lib:icys_lib-forge-${minecraft_version}:${icys_lib_version}")
 }
 ```
 
-and in `neoforge.mods.toml`:
+and in `mods.toml`:
 
 ```toml
 [[dependencies.${mod_id}]]
 modId="icys_lib"
-type="required"
-versionRange="[${icys_lib_version},)"
+mandatory=true
+versionRange="[${icys_lib_version},2)"
 ordering="AFTER"
 side="BOTH"
 ```

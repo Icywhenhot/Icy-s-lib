@@ -11,19 +11,25 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.network.chat.Component;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
-import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
-import net.neoforged.neoforge.common.NeoForge;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.client.event.RegisterClientCommandsEvent;
+import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
+import net.minecraftforge.common.MinecraftForge;
 
-@Mod(value = IcysLib.MOD_ID, dist = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = IcysLib.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public final class IcysLibClient {
 
-    public IcysLibClient(IEventBus bus) {
-        bus.addListener(RegisterClientReloadListenersEvent.class, e -> e.registerReloadListener(BookLoader.INSTANCE));
-        NeoForge.EVENT_BUS.addListener(RegisterClientCommandsEvent.class, e -> commands(e.getDispatcher()));
+    @SubscribeEvent
+    public static void reload(RegisterClientReloadListenersEvent event) {
+        event.registerReloadListener(BookLoader.INSTANCE);
+    }
+
+    @SubscribeEvent
+    public static void setup(FMLClientSetupEvent event) {
+        MinecraftForge.EVENT_BUS.addListener((RegisterClientCommandsEvent e) -> commands(e.getDispatcher()));
         IcyBooks.bindOpener(BookScreen::open);
     }
 

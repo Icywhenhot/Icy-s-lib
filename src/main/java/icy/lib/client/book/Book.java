@@ -48,7 +48,7 @@ final class Book {
         this.height = canvas[1];
         this.bleed = Json.ints(json, "bleed", 4, new int[]{0, 0, 0, 0});
         this.size = GsonHelper.getAsFloat(json, "size", 1f);
-        this.root = ResourceLocation.parse(GsonHelper.getAsString(json, "textures"));
+        this.root = new ResourceLocation(GsonHelper.getAsString(json, "textures"));
         JsonObject text = GsonHelper.getAsJsonObject(json, "text", new JsonObject());
         this.textScale = GsonHelper.getAsFloat(text, "scale", 1f);
         Integer col = Json.color(text, "color");
@@ -116,9 +116,9 @@ final class Book {
 
     ResourceLocation texture(String name) {
         if (name.indexOf(':') >= 0) {
-            return ResourceLocation.parse(name.endsWith(".png") ? name : name + ".png");
+            return new ResourceLocation(name.endsWith(".png") ? name : name + ".png");
         }
-        return ResourceLocation.fromNamespaceAndPath(root.getNamespace(), root.getPath() + name + ".png");
+        return new ResourceLocation(root.getNamespace(), root.getPath() + name + ".png");
     }
 
     Piece piece(String name) {

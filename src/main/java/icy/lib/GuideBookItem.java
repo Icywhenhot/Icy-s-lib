@@ -9,14 +9,16 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public class GuideBookItem extends Item {
+    private final ResourceLocation book;
+
     public GuideBookItem(Properties properties, ResourceLocation book) {
-        super(properties.stacksTo(1).component(IcysLib.BOOK.get(), book));
+        super(properties.stacksTo(1));
+        this.book = book;
     }
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        ResourceLocation book = stack.get(IcysLib.BOOK.get());
         if (level.isClientSide() && book != null) {
             IcyBooks.open(book);
         }

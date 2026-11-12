@@ -17,7 +17,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.fml.loading.FMLEnvironment;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.HashMap;
@@ -147,8 +147,8 @@ public class BookScreen extends Screen {
     }
 
     @Override
-    public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        renderTransparentBackground(g);
+    public void renderBackground(GuiGraphics g) {
+        super.renderBackground(g);
     }
 
     @Override
@@ -317,7 +317,7 @@ public class BookScreen extends Screen {
             minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1f));
             return;
         }
-        SoundEvent evt = SoundEvent.createVariableRangeEvent(ResourceLocation.parse(sound));
+        SoundEvent evt = SoundEvent.createVariableRangeEvent(new ResourceLocation(sound));
         minecraft.getSoundManager().play(SimpleSoundInstance.forUI(evt, 1f));
     }
 
@@ -337,7 +337,7 @@ public class BookScreen extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollY) {
         wheel += scrollY;
         int notches = (int) wheel;
         wheel -= notches;

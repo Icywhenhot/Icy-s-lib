@@ -45,7 +45,7 @@ public final class BookLoader extends SimplePreparableReloadListener<Map<Resourc
             if (slash < 0) {
                 continue;
             }
-            ResourceLocation id = ResourceLocation.fromNamespaceAndPath(file.getNamespace(), rest.substring(0, slash));
+            ResourceLocation id = new ResourceLocation(file.getNamespace(), rest.substring(0, slash));
             String inner = rest.substring(slash + 1);
             JsonObject json;
             try (Reader r = f.getValue().openAsReader()) {
